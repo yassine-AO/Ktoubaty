@@ -3,7 +3,7 @@ import { View, Text } from 'react-native';
 export default function HomeScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Home Screen - Featured Books</Text>
+      <Text>Home Screennnn - Featured Books</Text>
     </View>
   );
 }
