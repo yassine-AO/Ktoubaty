@@ -10,7 +10,8 @@ import {
   Alert,
   StyleSheet,
   ScrollView,
-  StatusBar
+  StatusBar,
+  RefreshControl
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { signIn } from '../firebase/auth';
@@ -23,6 +24,7 @@ export default function LoginScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
@@ -71,13 +73,16 @@ export default function LoginScreen({ navigation }) {
         <ScrollView 
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); setEmail(''); setPassword(''); setRefreshing(false); }} />}
         >
           <View style={styles.header}>
-            <View style={styles.logo}>
-              <Text style={styles.logoText}>Ktoubaty</Text>
+            <View style={styles.logoTop}>
+              <View style={styles.logo}>
+                <Text style={styles.logoText}>📚</Text>
+              </View>
             </View>
-            <Text style={styles.title}>Welcome back</Text>
-            <Text style={styles.subtitle}>Sign in to continue</Text>
+            <Text style={styles.title}>Ktoubaty</Text>
+            <Text style={styles.subtitle}>Connectez-vous pour retrouver vos livres préférés</Text>
           </View>
 
           <View style={styles.formContainer}>
@@ -168,13 +173,13 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 20,
+    width: 120,
+    height: 120,
+    marginBottom: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#667eea',
-    borderRadius: 20,
+    backgroundColor: '#ef4444',
+    borderRadius: 24,
     shadowColor: '#667eea',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -182,7 +187,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   logoText: {
-    fontSize: 24,
+    fontSize: 36,
     fontWeight: '700',
     color: '#ffffff',
   },
@@ -199,8 +204,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     lineHeight: 22,
   },
+  logoTop: {
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 6,
+  },
+  /* Social styles removed */
   formContainer: {
     width: '100%',
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+    marginTop: 12,
   },
   inputContainer: {
     marginBottom: 20,

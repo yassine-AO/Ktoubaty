@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   Text, 
@@ -7,11 +7,13 @@ import {
   ActivityIndicator,
   Alert,
   StyleSheet,
-  RefreshControl
+  RefreshControl,
+  TextInput,
+  Pressable
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from '../firebase/config';
-import { getUserData } from '../firebase/firestore';
+import { getUserData, setFavoriteGenres } from '../firebase/firestore';
 import { logOut } from '../firebase/auth';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -19,6 +21,16 @@ export default function ProfileScreen({ navigation }) {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedGenres, setSelectedGenres] = useState([]);
+  const scrollY = useRef(0);
+
+  useEffect(() => {
+    return () => {
+      // restore tab bar
+      try { navigation.getParent()?.setOptions({ tabBarStyle: { position: 'absolute', left: 16, right: 16, bottom: 12, backgroundColor: '#ffffff', borderRadius: 18, height: 72, paddingVertical: 6, borderTopWidth: 0, elevation: 14, shadowColor: '#0b1724', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.14, shadowRadius: 18, alignItems: 'center', display: 'flex' } }); } catch (e) {}
+    };
+  }, []);
+  const availableGenres = ['Fiction','Romance','Mystery','Fantasy','History','Science Fiction','Poetry','Biography','Children','Art','Science','Philosophy','Religion','Education','Crime','Thriller','Young Adult','Nonfiction','Cooking','Travel'];
 
   useEffect(() => {
     fetchUserData();
@@ -39,6 +51,8 @@ export default function ProfileScreen({ navigation }) {
           email: auth.currentUser.email,
           displayName: data?.displayName || auth.currentUser.displayName || 'User'
         });
+        // initialize selected genres from user data
+        setSelectedGenres((data && data.favoriteGenres) || []);
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -73,6 +87,28 @@ export default function ProfileScreen({ navigation }) {
     );
   };
 
+  // Toggle a genre selection locally
+  const toggleGenre = (genre) => {
+    setSelectedGenres((prev) => {
+      if (prev.includes(genre)) return prev.filter((g) => g !== genre);
+      return [...prev, genre];
+    });
+  };
+
+  const handleSaveGenres = async () => {
+    try {
+      const uid = auth.currentUser.uid;
+      await setFavoriteGenres(uid, selectedGenres);
+      // refresh local user data
+      const data = await getUserData(uid);
+      setUserData({ ...data, email: auth.currentUser.email, displayName: data?.displayName || auth.currentUser.displayName || 'User' });
+      Alert.alert('Saved', 'Favorite genres updated');
+    } catch (e) {
+      console.warn('Error saving genres', e);
+      Alert.alert('Error', 'Failed to save genres');
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
@@ -95,6 +131,17 @@ export default function ProfileScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <ScrollView 
         style={styles.scrollView}
+        onScroll={(e) => {
+          const y = e.nativeEvent.contentOffset.y;
+          const dy = y - (scrollY.current || 0);
+          scrollY.current = y;
+          if (dy > 6) {
+            try { navigation.getParent()?.setOptions({ tabBarStyle: { position: 'absolute', left: 16, right: 16, bottom: 12, backgroundColor: '#ffffff', borderRadius: 18, height: 72, paddingVertical: 6, borderTopWidth: 0, elevation: 14, shadowColor: '#0b1724', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.14, shadowRadius: 18, alignItems: 'center', display: 'none' } }); } catch (e) {}
+          } else if (dy < -6) {
+            try { navigation.getParent()?.setOptions({ tabBarStyle: { position: 'absolute', left: 16, right: 16, bottom: 12, backgroundColor: '#ffffff', borderRadius: 18, height: 72, paddingVertical: 6, borderTopWidth: 0, elevation: 14, shadowColor: '#0b1724', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.14, shadowRadius: 18, alignItems: 'center', display: 'flex' } }); } catch (e) {}
+          }
+        }}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -179,12 +226,20 @@ export default function ProfileScreen({ navigation }) {
                 <Ionicons name="book-outline" size={20} color="#667eea" style={styles.infoIcon} />
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Favorite Genres</Text>
-                  <View style={styles.genresList}>
-                    {userData.favoriteGenres.map((genre, index) => (
-                      <View key={index} style={styles.genreTag}>
-                        <Text style={styles.genreTagText}>{genre}</Text>
-                      </View>
-                    ))}
+                  <View style={styles.genresListEditable}>
+                    {availableGenres.map((genre) => {
+                      const selected = selectedGenres.includes(genre);
+                      return (
+                        <TouchableOpacity key={genre} onPress={() => toggleGenre(genre)} style={[styles.genreSelectable, selected ? styles.genreSelected : null]} activeOpacity={0.85}>
+                          <Text style={[styles.genreTagText, selected ? styles.genreSelectedText : null]}>{genre}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                  <View style={{ marginTop: 12, flexDirection: 'row', justifyContent: 'flex-end' }}>
+                    <TouchableOpacity style={styles.addGenreButton} onPress={handleSaveGenres} activeOpacity={0.9}>
+                      <Text style={styles.addGenreText}>Save</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </View>
@@ -320,6 +375,30 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 8,
   },
+  genresListEditable: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  genreEditable: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 18,
+    marginRight: 8,
+  },
+  removeGenreButton: { marginLeft: 8, backgroundColor: '#ef4444', width: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  addGenreRow: { flexDirection: 'row', marginTop: 12, alignItems: 'center' },
+  genreInput: { flex: 1, backgroundColor: '#fff', paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10, borderWidth: 1, borderColor: '#e5e7eb', marginRight: 8 },
+  addGenreButton: { backgroundColor: '#667eea', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10 },
+  addGenreText: { color: '#fff', fontWeight: '700' },
+  genreSelectable: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#fff', borderRadius: 16, marginRight: 8, marginBottom: 8, borderWidth: 1, borderColor: '#e6eef8' },
+  genreSelected: { backgroundColor: '#667eea', borderColor: '#667eea' },
+  genreSelectedText: { color: '#fff' },
   genreTag: {
     backgroundColor: '#f3f4f6',
     paddingHorizontal: 12,

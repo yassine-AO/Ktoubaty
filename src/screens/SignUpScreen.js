@@ -10,7 +10,8 @@ import {
   Alert,
   StyleSheet,
   ScrollView,
-  StatusBar
+  StatusBar,
+  RefreshControl
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { signUp } from '../firebase/auth';
@@ -97,6 +98,15 @@ export default function SignUpScreen({ navigation }) {
     );
   };
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    // clear form on pull-to-refresh
+    setEmail(''); setPassword(''); setConfirmPassword(''); setName(''); setSurname(''); setSelectedGenres([]);
+    setRefreshing(false);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -107,6 +117,7 @@ export default function SignUpScreen({ navigation }) {
         <ScrollView 
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
           <View style={styles.header}>
             <View style={styles.logo}>

@@ -42,3 +42,21 @@ export const getUserData = async (uid) => {
   const snap = await getDoc(userRef);
   return snap.exists() ? snap.data() : null;
 };
+
+// Add a favorite genre
+export const addFavoriteGenre = async (uid, genre) => {
+  const userRef = doc(db, 'users', uid);
+  await setDoc(userRef, { favoriteGenres: arrayUnion(genre) }, { merge: true });
+};
+
+// Remove a favorite genre
+export const removeFavoriteGenre = async (uid, genre) => {
+  const userRef = doc(db, 'users', uid);
+  await setDoc(userRef, { favoriteGenres: arrayRemove(genre) }, { merge: true });
+};
+
+// Overwrite favorite genres array
+export const setFavoriteGenres = async (uid, genres) => {
+  const userRef = doc(db, 'users', uid);
+  await setDoc(userRef, { favoriteGenres: genres }, { merge: true });
+};

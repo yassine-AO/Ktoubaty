@@ -9,7 +9,8 @@ import {
   Alert,
   StyleSheet,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  RefreshControl
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from '../firebase/auth';
@@ -23,6 +24,7 @@ export default function EditProfileScreen({ navigation, route }) {
   const [email, setEmail] = useState(initialUserData?.email || '');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     navigation.setOptions({
@@ -48,6 +50,12 @@ export default function EditProfileScreen({ navigation, route }) {
       ),
     });
   }, [navigation]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchUserData();
+    setRefreshing(false);
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -101,6 +109,7 @@ export default function EditProfileScreen({ navigation, route }) {
         <ScrollView 
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         >
           <View style={styles.formContainer}>
             <View style={styles.inputContainer}>
