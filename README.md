@@ -1,6 +1,6 @@
 # Ktoubaty
 
-Ktoubaty is a cross-platform React Native app that helps readers discover, curate, and manage their personal library. It blends a personalized Open Library feed with Firebase-backed profiles and favorites so users can browse, save, and create books seamlessly. Built with care by **Yassine Aouni**, **Mohammed ElMarghani**, and **Bay Brahim**.
+Ktoubaty is a cross-platform React Native app that helps readers discover, curate, and manage their personal library. It blends a personalized Open Library feed with Firebase-backed profiles and favorites so users can browse, save, and create books seamlessly. Built with care by **Yassine Aouni**, **Mohammed ElMarghani**, and **Bayi Brahim**.
 
 ## Table of Contents
 - [Overview](#overview)
