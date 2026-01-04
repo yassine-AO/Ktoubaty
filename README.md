@@ -154,28 +154,10 @@ Package scripts mirror Expo defaults and cover local development entry points.@p
 - Bottom tab styling is centralized in `AppNavigator`; consider extracting the design into a reusable component if you expand the navigation system.@src/navigation/AppNavigator.js#13-76
 - A placeholder `BottomTabBar.js` component exists under `src/components` for future custom tab bar styling.@src/components/BottomTabBar.js#1-1
 
-## Testing
-There are currently no automated tests or linters configured. Consider adding:
-- Unit tests with Jest for service wrappers (Firebase helpers, Open Library data massaging).
-- Integration tests with React Native Testing Library for key screens.
-- Type checking (TypeScript) or runtime prop validation to harden the UI layer.
-
-## Known Issues & TODOs
-- `EditProfileScreen` references an `updateUserData` helper that is not yet implemented in `src/firebase/firestore.js`, which will cause runtime errors when attempting to save profile edits. Implement the missing Firestore function to resolve this gap.@src/screens/EditProfileScreen.js#16-101 @src/firebase/firestore.js#4-62
-- `src/components/BottomTabBar.js` is empty; remove it or complete the custom tab implementation to avoid confusion.@src/components/BottomTabBar.js#1-1
-
-## Future Improvements
-1. Replace the hard-coded Firebase config with environment-driven secrets management.
-2. Cache Open Library responses or introduce offline storage for improved resilience.
-3. Add pagination and richer filters to the search experience.
-4. Introduce push notifications or email digests for new releases in favorite genres.
-5. Localize the UI (currently a mix of French and English labels) for a consistent experience.
-6. Add skeleton loaders and error boundaries to enhance perceived performance.
-
 ## Contributors
-- **Yassine Aouni** – Product vision, UI/UX direction, Firebase integration.
-- **Mohammed ElMarghani** – Authentication flows, navigation structure, data fetching.
-- **Bay Brahim** – Favorites system, custom book pipeline, quality assurance.
+- **Yassine Aouni**
+- **Mohammed ElMarghani**
+- **Bayi Brahim**
 
 ## License
 No license file is included. Add an open-source license (MIT, Apache 2.0, etc.) or specify proprietary usage terms before distributing the project.
